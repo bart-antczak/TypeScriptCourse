@@ -139,5 +139,4 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 .idea
 
-2_StartingProject/node_modules
-3_TSCompiler/node_modules
+*/node_modules
