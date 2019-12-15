@@ -1,32 +1,16 @@
-// const person: {
-//     name: string,
-//     age: number,
-//     hobbies: string[],
-//     role: [number, string]
-// } = {
-//     name: 'Bart',
-//     age: 26,
-//     hobbies: ['Sailing', 'Webdev'],
-//     role: [2, 'author']
-// };
+let userInput: unknown;
+let userName: string;
 
-enum Role { ADMIN, READ_ONLY, AUTHOR} // labels to numbers
+userInput = 5;
+userName = 'Max';
 
-const person = {
-    name: 'Bart',
-    age: 26,
-    hobbies: ['Sailing', 'Webdev'],
-    role: Role.ADMIN
+console.log(userInput);
+console.log(userName);
+
+const generateError = (message: string, code: number) => {
+    throw {message: message, errorCode: code}
+    // while (true) {}
 };
 
-// person.role.push('admin');
-// person.role[1] = 10;
-
-console.log(person.name + ' ' + person.age);
-console.log(person.role);
-
-for (const hobby of person.hobbies) {
-    console.log(hobby.toUpperCase())
-    // console.log(hobby.map())
-}
-
+const result = generateError('An error occurred', 500);
+console.log(result);
