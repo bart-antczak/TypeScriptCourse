@@ -63,26 +63,33 @@ function validate(validatableInput) {
     if (validatableInput.required) {
         isValid = isValid && validatableInput.value.toString().trim().length !== 0;
     }
-    if (validatableInput.minLength != null && typeof validatableInput.value === 'string') {
-        isValid = isValid && validatableInput.value.length > validatableInput.minLength;
+    if (validatableInput.minLength != null &&
+        typeof validatableInput.value === 'string') {
+        isValid =
+            isValid && validatableInput.value.length >= validatableInput.minLength;
     }
-    if (validatableInput.maxLength != null && typeof validatableInput.value === 'string') {
-        isValid = isValid && validatableInput.value.length < validatableInput.maxLength;
+    if (validatableInput.maxLength != null &&
+        typeof validatableInput.value === 'string') {
+        isValid =
+            isValid && validatableInput.value.length <= validatableInput.maxLength;
     }
-    if (validatableInput.min != null && typeof validatableInput.value === 'number') {
-        isValid = isValid && validatableInput.value > validatableInput.min;
+    if (validatableInput.min != null &&
+        typeof validatableInput.value === 'number') {
+        isValid = isValid && validatableInput.value >= validatableInput.min;
     }
-    if (validatableInput.max != null && typeof validatableInput.value === 'number') {
-        isValid = isValid && validatableInput.value < validatableInput.max;
+    if (validatableInput.max != null &&
+        typeof validatableInput.value === 'number') {
+        isValid = isValid && validatableInput.value <= validatableInput.max;
     }
     return isValid;
 }
-function autobind(target, methodName, descriptor) {
+function autobind(_, _2, descriptor) {
     const originalMethod = descriptor.value;
     const adjDescriptor = {
         configurable: true,
         get() {
-            return originalMethod.bind(this);
+            const boundFn = originalMethod.bind(this);
+            return boundFn;
         }
     };
     return adjDescriptor;
@@ -160,17 +167,10 @@ class ProjectList extends Component {
         const listEl = this.element.querySelector('ul');
         listEl.classList.remove('droppable');
     }
-    renderProjects() {
-        const listEl = document.getElementById(`${this.type}-projects-list`);
-        listEl.innerHTML = '';
-        for (const prjItem of this.assignedProjects) {
-            new ProjectItem(this.element.querySelector('ul').id, prjItem);
-        }
-    }
     configure() {
         this.element.addEventListener('dragover', this.dragOverHandler);
         this.element.addEventListener('dragleave', this.dragLeaveHandler);
-        this.element.addEventListener('drag', this.dropHandler);
+        this.element.addEventListener('drop', this.dropHandler);
         projectState.addListener((projects) => {
             const relevantProjects = projects.filter(prj => {
                 if (this.type === 'active') {
@@ -183,8 +183,17 @@ class ProjectList extends Component {
         });
     }
     renderContent() {
-        this.element.querySelector('ul').id = `${this.type}-projects-list`;
-        this.element.querySelector('h2').textContent = this.type.toUpperCase() + ' PROJECTS';
+        const listId = `${this.type}-projects-list`;
+        this.element.querySelector('ul').id = listId;
+        this.element.querySelector('h2').textContent =
+            this.type.toUpperCase() + ' PROJECTS';
+    }
+    renderProjects() {
+        const listEl = document.getElementById(`${this.type}-projects-list`);
+        listEl.innerHTML = '';
+        for (const prjItem of this.assignedProjects) {
+            new ProjectItem(this.element.querySelector('ul').id, prjItem);
+        }
     }
 }
 __decorate([
@@ -203,19 +212,33 @@ class ProjectInput extends Component {
         this.descriptionInputElement = this.element.querySelector('#description');
         this.peopleInputElement = this.element.querySelector('#people');
         this.configure();
-        this.renderContent();
     }
     configure() {
-        this.element.addEventListener('submit', this.submitHandler.bind(this));
+        this.element.addEventListener('submit', this.submitHandler);
     }
     renderContent() { }
-    getherUserInput() {
+    gatherUserInput() {
         const enteredTitle = this.titleInputElement.value;
         const enteredDescription = this.descriptionInputElement.value;
         const enteredPeople = this.peopleInputElement.value;
-        if (!validate({ value: enteredTitle, required: true, minLength: 5 }) &&
-            !validate({ value: enteredDescription, required: true, minLength: 5 }) &&
-            !validate({ value: enteredPeople, required: true, minLength: 5 })) {
+        const titleValidatable = {
+            value: enteredTitle,
+            required: true
+        };
+        const descriptionValidatable = {
+            value: enteredDescription,
+            required: true,
+            minLength: 5
+        };
+        const peopleValidatable = {
+            value: +enteredPeople,
+            required: true,
+            min: 1,
+            max: 5
+        };
+        if (!validate(titleValidatable) ||
+            !validate(descriptionValidatable) ||
+            !validate(peopleValidatable)) {
             alert('Invalid input, please try again!');
             return;
         }
@@ -230,7 +253,7 @@ class ProjectInput extends Component {
     }
     submitHandler(event) {
         event.preventDefault();
-        const userInput = this.getherUserInput();
+        const userInput = this.gatherUserInput();
         if (Array.isArray(userInput)) {
             const [title, desc, people] = userInput;
             projectState.addProject(title, desc, people);
